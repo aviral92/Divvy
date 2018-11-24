@@ -1,2 +1,2 @@
 # Divvy
-Distributed File Sharing System on LAN
+Content sharing application over LAN
