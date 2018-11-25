@@ -1,1 +1,10 @@
 // File to store a node's interface
+syntax = "proto3"
+
+package pb;
+
+// Let other peers know of a new peer
+message NodeJoin {
+    string nodeID = 1;
+    string address = 2;
+}

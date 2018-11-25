@@ -129,7 +129,8 @@ func startClientMode() {
     }
 }
 
-func main() {
+
+func start() {
     flagMode := flag.String("mode", "server", "start in client or server mode")
     flag.Parse()
     if strings.ToLower(*flagMode) == "server" {
@@ -138,3 +139,4 @@ func main() {
         startClientMode()
     }
 }
+
