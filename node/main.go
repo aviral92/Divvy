@@ -25,8 +25,8 @@ type NodeT struct {
 }
 
 // Initialize a new NodeT
-func initNodeT() NodeT {
-	Node := Node_t{}
+func newNodeT() NodeT {
+	Node := NodeT{}
 	Node.ID = uuid.New()
 
 	// Make an empty list of peers
@@ -35,21 +35,21 @@ func initNodeT() NodeT {
 }
 
 // Initialize everything about this node
-func initNode() {
-    // Read configuration
-
-	// Initialize file manager
-
-	// Initialize network manager
+func initNode(Node* NodeT) {
 }
 
 // Main function that handles all requests from sub-services
 func main() {
 	// Initialize node
-	Node := initNodeT()
-    initNode(Node)
-	log.Printf("Node ID: %v", Node.ID.String())
+	Node := newNodeT()
 
+    // Initialize network manager
+    // Read configuration
+	// Initialize file manager
+
+    initNode(&Node)
+
+	log.Printf("Node ID: %v", Node.ID.String())
 
 	// for loop that keeps listening for events
 }
