@@ -20,6 +20,7 @@ type PeerT struct {
 type NodeT struct {
 	ID      uuid.UUID
 	Address string
+	NetMgr  *NetworkManager
 	// List of Divvy peers
 	peers []PeerT
 }
@@ -35,7 +36,22 @@ func newNodeT() NodeT {
 }
 
 // Initialize everything about this node
-func initNode(Node* NodeT) {
+func initNode(Node *NodeT) {
+	log.Printf("[Node] Initializing Divvy node...")
+	log.Printf("[Node] ID: %v", Node.ID.String())
+
+	// Initialize network manager
+	netMgr := &NetworkManager{}
+	// This is only to populate the struct fields (think of this as network init)
+	netMgr.getLocalAddress()
+	Node.NetMgr = netMgr
+
+	log.Printf("[Node] IP: %v", Node.NetMgr.localAddress)
+
+	// Read configuration
+	// Initialize file manager
+
+	log.Printf("[Node] Divvy node initialized!")
 }
 
 // Main function that handles all requests from sub-services
@@ -43,13 +59,7 @@ func main() {
 	// Initialize node
 	Node := newNodeT()
 
-    // Initialize network manager
-    // Read configuration
-	// Initialize file manager
-
-    initNode(&Node)
-
-	log.Printf("Node ID: %v", Node.ID.String())
+	initNode(&Node)
 
 	// for loop that keeps listening for events
 }
