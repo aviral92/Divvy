@@ -8,21 +8,25 @@ package main
 import (
 	"github.com/google/uuid"
 	"log"
+    "net"
+
+    //"google.golang.org/grpc"
+    //"github.com/Divvy/src/pb"
 )
 
 // PeerT stores information about other Divvy peers
 type PeerT struct {
 	ID      uuid.UUID
-	Address string
+	Address net.IP
 }
 
 // NodeT stores information about this node
 type NodeT struct {
 	ID      uuid.UUID
-	Address string
-	NetMgr  *NetworkManager
-	// List of Divvy peers
-	peers []PeerT
+    netMgr  *NetworkManager
+
+    // List of Divvy peers
+	peers   []PeerT
 }
 
 // Initialize a new NodeT
@@ -40,13 +44,7 @@ func initNode(Node *NodeT) {
 	log.Printf("[Node] Initializing Divvy node...")
 	log.Printf("[Node] ID: %v", Node.ID.String())
 
-	// Initialize network manager
-	netMgr := &NetworkManager{}
-	// This is only to populate the struct fields (think of this as network init)
-	netMgr.getLocalAddress()
-	Node.NetMgr = netMgr
-
-	log.Printf("[Node] IP: %v", Node.NetMgr.localAddress)
+    Node.netMgr = NewNetworkManager()
 
 	// Read configuration
 	// Initialize file manager
@@ -61,5 +59,19 @@ func main() {
 
 	initNode(&Node)
 
-	// for loop that keeps listening for events
+    /*
+    Once everything is setup start listening. This call is blocking
+    Do not put any logic after gRPC serve
+    */
+    conn, err := net.Listen("tcp", controlPort)
+    if err != nil {
+        log.Fatalf("[Node] Failed to open port %v because %v", controlPort, err)
+    }
+    log.Printf("[Node] Listening on port %v", controlPort)
+    err = Node.netMgr.grpcServer.Serve(conn)
+    if err != nil {
+        log.Fatalf("[Node] Failed to serve %v", err)
+    }
+
+    log.Printf("[Node] Bye from Divvy!")
 }

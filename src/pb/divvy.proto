@@ -1,7 +1,19 @@
 // File to store a node's interface
-syntax = "proto3"
+syntax = "proto3";
 
 package pb;
+
+service Divvy {
+    rpc Ping(Empty) returns (Success) {}
+}
+
+// An empty message
+message Empty {
+}
+
+// A success message
+message Success {
+}
 
 // Let other peers know of a new peer
 message NodeJoin {
