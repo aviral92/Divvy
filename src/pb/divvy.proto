@@ -5,6 +5,7 @@ package pb;
 
 service Divvy {
     rpc Ping(Empty) returns (Success) {}
+    rpc NodeJoin (NewNode) returns (Success) {}
 }
 
 // An empty message
@@ -16,7 +17,7 @@ message Success {
 }
 
 // Let other peers know of a new peer
-message NodeJoin {
+message NewNode {
     string nodeID = 1;
     string address = 2;
 }
