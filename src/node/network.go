@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net"
+    "strings"
 
 	"github.com/google/uuid"
 	context "golang.org/x/net/context"
@@ -116,15 +117,12 @@ func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 		log.Printf("[Network] Unable to add new peer: %v", err)
 	}
 
-	// Broadcast message is sent to the sender as well. Ignore that message
-	if newPeer.ID != netMgr.ID {
-		newPeer.Address = net.ParseIP(newNode.Address)
-		netMgr.peers = append(netMgr.peers, newPeer)
-	}
+    newPeer.Address = net.ParseIP(newNode.Address)
+    netMgr.peers = append(netMgr.peers, newPeer)
 }
 
 // Discover other Divvy peers on the network
-func (netMgr *NetworkManager) DiscoverPeers(nodeID uuid.UUID) int {
+func (netMgr *NetworkManager) DiscoverPeers() int {
 	// Send a broadcast message over the LAN
 	addr, _ := net.ResolveUDPAddr("udp", broadcastAddress+discoveryPort)
 	localAddress, _ := net.ResolveUDPAddr("ucp", "127.0.0.1:0")
@@ -136,7 +134,7 @@ func (netMgr *NetworkManager) DiscoverPeers(nodeID uuid.UUID) int {
 
 	var buffer bytes.Buffer
 	encoder := gob.NewEncoder(&buffer)
-	encoder.Encode(&pb.NewNode{NodeID: nodeID.String(), Address: netMgr.address.String()})
+    encoder.Encode(&pb.NewNode{NodeID: netMgr.ID.String(), Address: netMgr.address.String(), IsReply: false})
 	conn.Write(buffer.Bytes())
 
 	return 0
@@ -145,6 +143,7 @@ func (netMgr *NetworkManager) DiscoverPeers(nodeID uuid.UUID) int {
 func (netMgr *NetworkManager) ListenForDiscoveryMessages() {
 	udpData := make([]byte, 2048)
 	var newNodeMessage pb.NewNode
+    var buffer bytes.Buffer
 
 	listenAddress, _ := net.ResolveUDPAddr("udp", discoveryPort)
 	conn, err := net.ListenUDP("udp", listenAddress)
@@ -156,10 +155,26 @@ func (netMgr *NetworkManager) ListenForDiscoveryMessages() {
 
 	// Keep listening for new messages
 	for {
-		dataLen, _, _ := conn.ReadFromUDP(udpData)
+		dataLen, peerAddr, _ := conn.ReadFromUDP(udpData)
 		udpDataBuffer := bytes.NewBuffer(udpData[:dataLen])
 		decoder := gob.NewDecoder(udpDataBuffer)
 		decoder.Decode(&newNodeMessage)
+
+        if newNodeMessage.NodeID == netMgr.ID.String() {
+            continue
+        }
+
 		go netMgr.AddNewNode(newNodeMessage)
+
+        // Respond to the peer if it is not a reply
+        if newNodeMessage.IsReply == true {
+            continue
+        }
+        peerIP := strings.Split(peerAddr.String(), ":")[0]
+        log.Printf("New Peer IP: %v", peerIP)
+        newPeerAddr, _ := net.ResolveUDPAddr("udp", peerIP+discoveryPort)
+        encoder := gob.NewEncoder(&buffer)
+        encoder.Encode(&pb.NewNode{NodeID: netMgr.ID.String(), Address: netMgr.address.String(), IsReply: true})
+        conn.WriteToUDP(buffer.Bytes(), newPeerAddr)
 	}
 }

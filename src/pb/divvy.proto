@@ -19,4 +19,5 @@ message Success {
 message NewNode {
     string nodeID = 1;
     string address = 2;
+    bool   isReply = 3;
 }

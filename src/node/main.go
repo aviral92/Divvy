@@ -58,14 +58,15 @@ func main() {
 
 	initNode(&Node)
 
+
+	// Discovery listener. Do this before sending the discovery messages
+	go Node.netMgr.ListenForDiscoveryMessages()
+
+    Node.netMgr.DiscoverPeers()
 	/*
 	   Once everything is setup start listening. This call is blocking
 	   Do not put any logic after gRPC serve
 	*/
-
-	// Discovery listener
-	go Node.netMgr.ListenForDiscoveryMessages()
-
 	// gRPC server
 	conn, err := net.Listen("tcp", controlPort)
 	if err != nil {
