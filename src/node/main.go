@@ -6,7 +6,7 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"log"
 	"net"
 
@@ -43,6 +43,9 @@ func initNode(Node *NodeT) {
 	log.Printf("[Node] ID: %v", Node.ID.String())
 
 	Node.netMgr = NewNetworkManager()
+	// Redundant but saves computation
+	Node.netMgr.ID = Node.ID
+
 	Node.fileMgr = NewFileManager("/home/vagrant/go/src/github.com/Divvy/test")
 
 	log.Printf("[Node] Divvy node initialized!")
@@ -59,6 +62,11 @@ func main() {
 	   Once everything is setup start listening. This call is blocking
 	   Do not put any logic after gRPC serve
 	*/
+
+	// Discovery listener
+	go Node.netMgr.ListenForDiscoveryMessages()
+
+	// gRPC server
 	conn, err := net.Listen("tcp", controlPort)
 	if err != nil {
 		log.Fatalf("[Node] Failed to open port %v because %v", controlPort, err)

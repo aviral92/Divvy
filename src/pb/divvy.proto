@@ -16,7 +16,6 @@ message Empty {
 message Success {
 }
 
-// Let other peers know of a new peer
 message NewNode {
     string nodeID = 1;
     string address = 2;

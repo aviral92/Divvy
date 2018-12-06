@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"log"
 	"net"
@@ -14,7 +16,9 @@ import (
 
 // Colon is not a typo!
 const (
-	controlPort = ":2018"
+	discoveryPort    = ":2017"
+	controlPort      = ":2018"
+	broadcastAddress = "255.255.255.255"
 )
 
 // PeerT stores information about other Divvy peers
@@ -25,6 +29,7 @@ type PeerT struct {
 
 // NetworkManger implements the Divvy interface
 type NetworkManager struct {
+	ID                uuid.UUID
 	address           net.IP
 	availableToOthers bool
 	grpcServer        *grpc.Server
@@ -99,4 +104,62 @@ func (netMgr *NetworkManager) Ping(ctx context.Context, empty *pb.Empty) (*pb.Su
 func (netMgr *NetworkManager) NodeJoin(ctx context.Context, newNode *pb.NewNode) (*pb.Success, error) {
 	// A new peer has appeared
 	return &pb.Success{}, nil
+}
+
+func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
+	// Add the new node to the peers list
+	log.Printf("[Network] New Divvy node (ID: %v, IP: %v)", newNode.NodeID, newNode.Address)
+	var newPeer PeerT
+	var err error
+	newPeer.ID, err = uuid.Parse(newNode.NodeID)
+	if err != nil {
+		log.Printf("[Network] Unable to add new peer: %v", err)
+	}
+
+	// Broadcast message is sent to the sender as well. Ignore that message
+	if newNode.ID != netMgr.ID {
+		newPeer.Address = net.ParseIP(newNode.Address)
+		netMgr.peers = append(netMgr.peers, newPeer)
+	}
+}
+
+// Discover other Divvy peers on the network
+func (netMgr *NetworkManager) DiscoverPeers(nodeID uuid.UUID) int {
+	// Send a broadcast message over the LAN
+	addr, _ := net.ResolveUDPAddr("udp", broadcastAddress+discoveryPort)
+	localAddress, _ := net.ResolveUDPAddr("ucp", "127.0.0.1:0")
+
+	conn, err := net.DialUDP("udp", localAddress, addr)
+	if err != nil {
+		log.Fatalf("[Network] Unable to dial UDP %v", err)
+	}
+
+	var buffer bytes.Buffer
+	encoder := gob.NewEncoder(&buffer)
+	encoder.Encode(&pb.NewNode{NodeID: nodeID.String(), Address: netMgr.address.String()})
+	conn.Write(buffer.Bytes())
+
+	return 0
+}
+
+func (netMgr *NetworkManager) ListenForDiscoveryMessages() {
+	udpData := make([]byte, 2048)
+	var newNodeMessage pb.NewNode
+
+	listenAddress, _ := net.ResolveUDPAddr("udp", discoveryPort)
+	conn, err := net.ListenUDP("udp", listenAddress)
+	defer conn.Close()
+
+	if err != nil {
+		log.Fatalf("[Network] Unable to listen for discovery: %v", err)
+	}
+
+	// Keep listening for new messages
+	for {
+		dataLen, _, _ := conn.ReadFromUDP(udpData)
+		udpDataBuffer := bytes.NewBuffer(udpData[:dataLen])
+		decoder := gob.NewDecoder(udpDataBuffer)
+		decoder.Decode(&newNodeMessage)
+		go netMgr.AddNewNode(newNodeMessage)
+	}
 }
