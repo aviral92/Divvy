@@ -72,14 +72,6 @@ return hashes
 }*/
 
 func (file *File) GetHash(filePath string) string {
-	//hasher := sha1.New()
-	//hasher.Write([]byte(name))
-	//return base64.URLEncoding.EncodeToString(hasher.Sum(nil))
-	//hash := sha256.Sum256([]byte(name))
-	/*converted := []byte(name)
-	hasher := sha256.New()
-	hasher.Write(converted)*/
-	//return hex.EncodeToString(hasher.Sum(nil)) == encoded
 	input := strings.NewReader(filePath)
 
 	hash := sha256.New()
