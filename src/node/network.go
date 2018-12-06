@@ -117,7 +117,7 @@ func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 	}
 
 	// Broadcast message is sent to the sender as well. Ignore that message
-	if newNode.ID != netMgr.ID {
+	if newPeer.ID != netMgr.ID {
 		newPeer.Address = net.ParseIP(newNode.Address)
 		netMgr.peers = append(netMgr.peers, newPeer)
 	}
