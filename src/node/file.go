@@ -4,7 +4,7 @@ import (
 	"os"
 	//"time"
 	"crypto/sha256"
-	"encoding/base64"
+	"encoding/hex"
 	"io"
 	"io/ioutil"
 	"log"
@@ -12,37 +12,54 @@ import (
 )
 
 type File struct {
-	//Delete  bool        `json:"de,omitempty"`
-	Path string `json:"p,omitempty"`
-	Size int64  `json:"s,omitempty"`
-	//Mode    os.FileMode `json:"m,omitempty"`
-	//ModTime *time.Time  `json:"t,omitempty"`
-	IsDir   bool   `json:"d,omitempty"`
-	Hash    uint64 `json:"h,omitempty",hash:"ignore"`
-	Content []byte `json:"c,omitempty"`
+	FileName	string
+	Path		string
+	Size		int64
+	IsDir		bool
+	Hash		string
 }
 
 type FileManager struct {
 	directoryPath     string
 	files             []*File
-	availableToOthers bool
-	//grpcServer        *grpc.Server
 }
 
-func NewFileManager(pathToDirectory string) *FileManager {
+func NewFileManager(directoryPath string) *FileManager {
 	fileMgr := &FileManager{}
-	fileMgr.directoryPath = pathToDirectory
+	fileMgr.directoryPath = directoryPath
 
 	fileMgr.files = []*File{}
-	f := &File{Path: "/home/vagrant/go/src/github.com/Divvy/README.md"}
+	files, err := ioutil.ReadDir(fileMgr.directoryPath)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	fileMgr.files = append(fileMgr.files, f)
+	for _, f := range files {
+		log.Println(f.Name())
+
+		pathToFile := directoryPath + f.Name()
+		fi, err := os.Stat(pathToFile)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		//fileHash := computeHash(pathToFile)
+
+		f := &File{	FileName :	f.Name(),
+				Path	 :	fileMgr.directoryPath,
+				IsDir	 :	false,
+				Size	 :	fi.Size(),
+				//Hash	 :	fileHash
+				}
+
+		fileMgr.files = append(fileMgr.files, f)
+	}
 
 	return fileMgr
 }
 
 //check if file exists
-func (file *File) exists(name string) bool {
+func (file *File) checkIfFileExists(name string) bool {
 	if _, err := os.Stat(name); err != nil {
 		if os.IsNotExist(err) {
 			return false
@@ -71,7 +88,15 @@ hashes[i] = GetHash(name)
 return hashes
 }*/
 
-func (file *File) GetHash(filePath string) string {
+func (file *File) setHash() {
+	file.Hash = file.computeHash(file.Path + file.FileName)
+}
+
+func (file *File) getHash(filePath string) string{
+	return file.Hash
+}
+
+func (file *File) computeHash(filePath string) string {
 	input := strings.NewReader(filePath)
 
 	hash := sha256.New()
@@ -80,6 +105,6 @@ func (file *File) GetHash(filePath string) string {
 	}
 	sum := hash.Sum(nil)
 
-	return base64.URLEncoding.EncodeToString(sum)
+	return hex.EncodeToString(sum)
 
 }

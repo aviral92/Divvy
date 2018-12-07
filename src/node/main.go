@@ -12,7 +12,7 @@ import (
 
 	//"google.golang.org/grpc"
 
-	//"github.com/Divvy/src/pb"
+	//"github.com/Divvy/src/node"
 	"github.com/google/uuid"
 )
 
@@ -53,6 +53,7 @@ func initNode(Node *NodeT) {
 
 // Main function that handles all requests from sub-services
 func main() {
+
 	// Initialize node
 	Node := newNodeT()
 
@@ -62,10 +63,11 @@ func main() {
 	go Node.netMgr.ListenForDiscoveryMessages()
 
 	Node.netMgr.DiscoverPeers()
-	/*
-	   Once everything is setup start listening. This call is blocking
-	   Do not put any logic after gRPC serve
-	*/
+
+	//go Run()
+	// Once everything is setup start listening. This call is blocking
+	// Do not put any logic after gRPC serve
+
 	// gRPC server
 	conn, err := net.Listen("tcp", controlPort)
 	if err != nil {
