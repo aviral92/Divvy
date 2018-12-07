@@ -96,16 +96,29 @@ ERROR:
 }
 
 // Divvy service interface implementation
-
 func (netMgr *NetworkManager) Ping(ctx context.Context, empty *pb.Empty) (*pb.Success, error) {
 	log.Printf("[Network] Received ping")
 	return &pb.Success{}, nil
 }
 
-func (netMgr *NetworkManager) NodeJoin(ctx context.Context, newNode *pb.NewNode) (*pb.Success, error) {
-	// A new peer has appeared
-	return &pb.Success{}, nil
+func (netMgr *NetworkManager) GetFileList(ctx context.Context, empty *pb.Empty) (*pb.FileList, error) {
+    // TODO: Call the File manager to get all files
+    return &pb.FileList{}, nil
 }
+
+func (netMgr *NetworkManager) Search(ctx context.Context, query *pb.SearchQuery) (*pb.FileList, error) {
+    // TODO: Call the File manager to get all the files matching name/hash
+    return &pb.FileList{}, nil
+}
+
+func (netMgr *NetworkManager) DownloadFile(ctx context.Context, request *pb.DownloadRequest) (*pb.Success, error) {
+    // TODO: The request should be forwarded to the download manager
+    return &pb.Success{}, nil
+}
+
+/*
+*  Discover other Divvy peers on the network
+*/
 
 func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 	// Add the new node to the peers list
@@ -121,7 +134,6 @@ func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
     netMgr.peers = append(netMgr.peers, newPeer)
 }
 
-// Discover other Divvy peers on the network
 func (netMgr *NetworkManager) DiscoverPeers() int {
 	// Send a broadcast message over the LAN
 	addr, _ := net.ResolveUDPAddr("udp", broadcastAddress+discoveryPort)

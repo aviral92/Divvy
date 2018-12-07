@@ -5,7 +5,9 @@ package pb;
 
 service Divvy {
     rpc Ping(Empty) returns (Success) {}
-    rpc NodeJoin (NewNode) returns (Success) {}
+    rpc Search(SearchQuery) returns (FileList) {}
+    rpc GetFileList(Empty) returns (FileList) {}
+    rpc DownloadFile(DownloadRequest) returns (Success) {}
 }
 
 // An empty message
@@ -20,4 +22,24 @@ message NewNode {
     string nodeID = 1;
     string address = 2;
     bool   isReply = 3;
+}
+
+message SearchQuery {
+    bool    isHash = 1;
+    string  key = 2;
+}
+
+message File {
+    string name = 1;
+    string hash = 2;
+}
+
+message FileList {
+    string nodeID = 1;
+    repeated File files = 2;
+}
+
+message DownloadRequest {
+    string  hash = 1;
+    int64   offset = 2;
 }
