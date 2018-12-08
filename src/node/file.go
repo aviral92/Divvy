@@ -20,39 +20,41 @@ type File struct {
 }
 
 type FileManager struct {
-	directoryPath     string
-	files             []*File
+	DirectoryPath		string
+	SharedFiles             []*File
 }
 
-func NewFileManager(directoryPath string) *FileManager {
+func NewFileManager(DirectoryPath string) *FileManager {
 	fileMgr := &FileManager{}
-	fileMgr.directoryPath = directoryPath
+	fileMgr.DirectoryPath = DirectoryPath
 
-	fileMgr.files = []*File{}
-	files, err := ioutil.ReadDir(fileMgr.directoryPath)
+	fileMgr.SharedFiles = []*File{}
+
+	//Read Directory
+	files, err := ioutil.ReadDir(fileMgr.DirectoryPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	//Go through all files and add them to struct
 	for _, f := range files {
 		log.Println(f.Name())
 
-		pathToFile := directoryPath + f.Name()
+		pathToFile := DirectoryPath + "/" + f.Name()
 		fi, err := os.Stat(pathToFile)
 
 		if err != nil {
 			log.Fatal(err)
 		}
-		//fileHash := computeHash(pathToFile)
 
 		f := &File{	FileName :	f.Name(),
-				Path	 :	fileMgr.directoryPath,
+				Path	 :	fileMgr.DirectoryPath,
 				IsDir	 :	false,
 				Size	 :	fi.Size(),
-				//Hash	 :	fileHash
-				}
+			  }
+		f.setHash()
 
-		fileMgr.files = append(fileMgr.files, f)
+		fileMgr.SharedFiles = append(fileMgr.SharedFiles, f)
 	}
 
 	return fileMgr
@@ -70,13 +72,17 @@ func (file *File) checkIfFileExists(name string) bool {
 
 func (fileMgr *FileManager) displayDirectory() {
 
-	files, err := ioutil.ReadDir(fileMgr.directoryPath)
+/*	files, err := ioutil.ReadDir(fileMgr.directoryPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for _, f := range files {
 		log.Println(f.Name())
+	}
+*/
+	for _, f := range fileMgr.SharedFiles{
+		log.Print(f.FileName)
 	}
 }
 

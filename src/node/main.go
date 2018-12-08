@@ -46,6 +46,7 @@ func initNode(Node *NodeT) {
 	// Redundant but saves computation
 	Node.netMgr.ID = Node.ID
 
+	//create file manager and pass the path to shared directory
 	Node.fileMgr = NewFileManager("/home/vagrant/go/src/github.com/Divvy/test")
 
 	log.Printf("[Node] Divvy node initialized!")
@@ -64,7 +65,9 @@ func main() {
 
 	Node.netMgr.DiscoverPeers()
 
+	//Node.fileMgr.displayDirectory()
 	//go Run()
+
 	// Once everything is setup start listening. This call is blocking
 	// Do not put any logic after gRPC serve
 
