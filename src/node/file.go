@@ -70,6 +70,15 @@ func (file *File) checkIfFileExists(name string) bool {
 	return true
 }
 
+func (fileMgr *FileManager) checkIfHashExists(hash string) *File {
+	for _, f := range fileMgr.SharedFiles{
+		if hash == f.Hash{
+			return f
+		}
+	}
+	return nil
+}
+
 func (fileMgr *FileManager) displayDirectory() {
 
 /*	files, err := ioutil.ReadDir(fileMgr.directoryPath)
