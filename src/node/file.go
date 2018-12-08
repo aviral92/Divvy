@@ -91,16 +91,16 @@ func createListener(DirectoryPath string) {
 }
 
 //check if file exists
-func (file *File) checkIfFileExists(name string) bool {
-	if _, err := os.Stat(name); err != nil {
-		if os.IsNotExist(err) {
-			return false
+func (fileMgr *FileManager) searchFileByName(name string) *File {
+	for _, f := range fileMgr.SharedFiles{
+		if name == f.FileName{
+			return f
 		}
 	}
-	return true
+	return nil
 }
 
-func (fileMgr *FileManager) checkIfHashExists(hash string) *File {
+func (fileMgr *FileManager) searchFileByHash(hash string) *File {
 	for _, f := range fileMgr.SharedFiles{
 		if hash == f.Hash{
 			return f
@@ -138,6 +138,10 @@ func (file *File) setHash() {
 }
 
 func (file *File) getHash(filePath string) string{
+	if len(file.Hash) == 0 {
+		file.Hash = file.computeHash(filePath)
+	}
+
 	return file.Hash
 }
 
