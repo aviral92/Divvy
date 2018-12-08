@@ -2,13 +2,14 @@ package main
 
 import (
 	"os"
-	//"time"
+	"time"
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
 	"io/ioutil"
 	"log"
 	"strings"
+	"github.com/radovskyb/watcher"
 )
 
 type File struct {
@@ -57,7 +58,36 @@ func NewFileManager(DirectoryPath string) *FileManager {
 		fileMgr.SharedFiles = append(fileMgr.SharedFiles, f)
 	}
 
+	createListener(fileMgr.DirectoryPath)
 	return fileMgr
+}
+
+func createListener(DirectoryPath string) {
+	// creates a new file watcher
+	w := watcher.New()
+	//w.SetMaxEvents(1)
+
+	w.FilterOps(watcher.Remove, watcher.Rename, watcher.Move, watcher.Create, watcher.Write)
+
+	go func() {
+		for {
+			select {
+				case event := <-w.Event:
+					log.Println(event) // Print the event's info.
+				case err := <-w.Error:
+					log.Fatalln(err)
+				case <-w.Closed:
+					return
+				}
+		}
+	}()
+	if err := w.AddRecursive(DirectoryPath); err != nil {
+		log.Fatalln(err)
+	}
+
+	if err := w.Start(time.Millisecond * 100); err != nil {
+		log.Fatalln(err)
+	}
 }
 
 //check if file exists
