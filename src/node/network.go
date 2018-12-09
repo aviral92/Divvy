@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"strings"
+    "time"
 
 	"github.com/google/uuid"
 	context "golang.org/x/net/context"
@@ -26,6 +27,7 @@ const (
 type PeerT struct {
 	ID      uuid.UUID
 	Address net.IP
+    Client  pb.DivvyClient
 }
 
 // NetworkManger implements the Divvy interface
@@ -101,14 +103,14 @@ func (netMgr *NetworkManager) Ping(ctx context.Context, empty *pb.Empty) (*pb.Su
 	return &pb.Success{}, nil
 }
 
-func (netMgr *NetworkManager) GetFileList(ctx context.Context, empty *pb.Empty) (*pb.FileList, error) {
-	// TODO: Call the File manager to get all files
-	return &pb.FileList{}, nil
+func (netMgr *NetworkManager) GetSharedFiles(ctx context.Context, empty *pb.Empty) (*pb.FileList, error) {
+    result, err := GetSharedFilesHandler()
+	return result, err
 }
 
 func (netMgr *NetworkManager) Search(ctx context.Context, query *pb.SearchQuery) (*pb.FileList, error) {
-	// TODO: Call the File manager to get all the files matching name/hash
-	return &pb.FileList{}, nil
+    result, err := SearchHandler(query)
+	return result, err
 }
 
 func (netMgr *NetworkManager) DownloadFile(ctx context.Context, request *pb.DownloadRequest) (*pb.Success, error) {
@@ -118,7 +120,7 @@ func (netMgr *NetworkManager) DownloadFile(ctx context.Context, request *pb.Down
 
 /*
 *  Discover other Divvy peers on the network
- */
+*/
 
 func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 	// Add the new node to the peers list
@@ -132,6 +134,18 @@ func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 
 	newPeer.Address = net.ParseIP(newNode.Address)
 	netMgr.peers = append(netMgr.peers, newPeer)
+
+    backoffConfig := grpc.DefaultBackoffConfig
+	backoffConfig.MaxDelay = 500 * time.Millisecond
+
+	conn, err := grpc.Dial(newPeer.Address.String()+discoveryPort,
+                            grpc.WithInsecure(),
+                            grpc.WithBackoffConfig(backoffConfig))
+	if err != nil {
+		newPeer.Client = pb.NewDivvyClient(nil)
+	}
+	newPeer.Client = pb.NewDivvyClient(conn)
+
 }
 
 func (netMgr *NetworkManager) DiscoverPeers() int {

@@ -6,7 +6,7 @@ package pb;
 service Divvy {
     rpc Ping(Empty) returns (Success) {}
     rpc Search(SearchQuery) returns (FileList) {}
-    rpc GetFileList(Empty) returns (FileList) {}
+    rpc GetSharedFiles(Empty) returns (FileList) {}
     rpc DownloadFile(DownloadRequest) returns (Success) {}
 }
 

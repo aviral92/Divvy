@@ -16,6 +16,14 @@ import (
 	"github.com/google/uuid"
 )
 
+/*
+*  Data structure that holds all the information. There should be only one NodeT
+*  instantiations throughout the program. All services should use only this
+*  object
+*/
+
+var Node NodeT
+
 // NodeT stores information about this node
 type NodeT struct {
 	ID      uuid.UUID
@@ -37,6 +45,10 @@ func newNodeT() NodeT {
 	return Node
 }
 
+func getNode() *NodeT {
+    return &Node
+}
+
 // Initialize everything about this node
 func initNode(Node *NodeT) {
 	log.Printf("[Node] Initializing Divvy node...")
@@ -56,7 +68,7 @@ func initNode(Node *NodeT) {
 func main() {
 
 	// Initialize node
-	Node := newNodeT()
+	Node = newNodeT()
 
 	initNode(&Node)
 
@@ -66,7 +78,7 @@ func main() {
 	Node.netMgr.DiscoverPeers()
 
 	//Node.fileMgr.displayDirectory()
-	//go Run()
+	// go Run()
 
 	// Once everything is setup start listening. This call is blocking
 	// Do not put any logic after gRPC serve
