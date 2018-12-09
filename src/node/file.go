@@ -10,6 +10,7 @@ import (
 	"log"
 	"strings"
 	"github.com/radovskyb/watcher"
+	"path/filepath"
 )
 
 type File struct {
@@ -58,11 +59,11 @@ func NewFileManager(DirectoryPath string) *FileManager {
 		fileMgr.SharedFiles = append(fileMgr.SharedFiles, f)
 	}
 
-	createListener(fileMgr.DirectoryPath)
+	fileMgr.createListener(fileMgr.DirectoryPath)
 	return fileMgr
 }
 
-func createListener(DirectoryPath string) {
+func (fileMgr *FileManager) createListener(DirectoryPath string) {
 	// creates a new file watcher
 	w := watcher.New()
 	//w.SetMaxEvents(1)
@@ -73,7 +74,9 @@ func createListener(DirectoryPath string) {
 		for {
 			select {
 				case event := <-w.Event:
-					log.Println(event) // Print the event's info.
+					log.Println(event.String()) // Print the event's info.
+					s := strings.Split(event.String(), " ")
+					fileMgr.HandleEvent(s)
 				case err := <-w.Error:
 					log.Fatalln(err)
 				case <-w.Closed:
@@ -90,6 +93,22 @@ func createListener(DirectoryPath string) {
 	}
 }
 
+func (fileMgr *FileManager) HandleEvent(s []string) {
+	if (s[0] == "FILE") {
+		switch op := s[2]; op {
+			case "RENAME":
+				for _, f := range fileMgr.SharedFiles{
+					if (f.FileName == s[1][1:len(s[1])-1]){
+						f.FileName = filepath.Base(s[5][:len(s[5])-1])
+					}
+				}
+			case "REMOVE":
+
+		}
+	}
+	fileMgr.displayDirectory()
+
+}
 //check if file exists
 func (fileMgr *FileManager) searchFileByName(name string) *File {
 	for _, f := range fileMgr.SharedFiles{
@@ -111,27 +130,10 @@ func (fileMgr *FileManager) searchFileByHash(hash string) *File {
 
 func (fileMgr *FileManager) displayDirectory() {
 
-/*	files, err := ioutil.ReadDir(fileMgr.directoryPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, f := range files {
-		log.Println(f.Name())
-	}
-*/
 	for _, f := range fileMgr.SharedFiles{
 		log.Print(f.FileName)
 	}
 }
-
-/*func (file *File) GetHashes(names []string) []string {
-hashes := make([]string, len(names))
-for i, name := range names {
-hashes[i] = GetHash(name)
-}
-return hashes
-}*/
 
 func (file *File) setHash() {
 	file.Hash = file.computeHash(file.Path + file.FileName)
