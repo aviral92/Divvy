@@ -20,7 +20,7 @@ type CommonFileListRPCResponse struct {
 func SearchHandler(query *pb.SearchQuery) (*pb.FileList, error) {
 	// TODO: Call the File manager to get all the files matching name/hash
     if query.IsHash {
-        file := Node.fileMgr.checkIfHashExists(query.Key)
+        file := Node.fileMgr.searchFileByHash(query.Key)
         log.Printf("Searched file: %v", file.FileName)
     }
 
