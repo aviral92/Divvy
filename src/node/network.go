@@ -43,7 +43,11 @@ type NetworkManager struct {
 
 func NewNetworkManager() *NetworkManager {
 	netMgr := &NetworkManager{}
-	netMgr.getLocalAddress()
+    _, err := netMgr.getLocalAddress()
+    if err != nil {
+        log.Printf("[Network] %v", err)
+        return netMgr
+    }
 
 	log.Printf("[Network] IP: %v", netMgr.address)
 	netMgr.grpcServer = grpc.NewServer()
@@ -67,6 +71,9 @@ func (netMgr *NetworkManager) getLocalAddress() (net.IP, error) {
 			goto ERROR
 		}
 
+        if i.Name != Node.config.NetworkInterface {
+            continue
+        }
 		for _, addr := range addrs {
 			var ip net.IP
 			switch v := addr.(type) {
@@ -90,6 +97,7 @@ func (netMgr *NetworkManager) getLocalAddress() (net.IP, error) {
 	}
 
 ERROR:
+    netMgr.address = nil
 	netMgr.availableToOthers = false
 	if err != nil {
 		return nil, err

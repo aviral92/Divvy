@@ -29,6 +29,7 @@ type NodeT struct {
 	ID      uuid.UUID
 	netMgr  *NetworkManager
 	fileMgr *FileManager
+    config  *Configuration
 
 	// List of Divvy peers
 	peers []PeerT
@@ -54,12 +55,16 @@ func initNode(Node *NodeT) {
 	log.Printf("[Node] Initializing Divvy node...")
 	log.Printf("[Node] ID: %v", Node.ID.String())
 
+    // Read configuration file
+    Node.config = ReadConfigFile("config.json")
+    log.Printf("[Node] Network interface: %v", Node.config.NetworkInterface)
+
 	Node.netMgr = NewNetworkManager()
 	// Redundant but saves computation
 	Node.netMgr.ID = Node.ID
 
-	//create file manager and pass the path to shared directory
-	Node.fileMgr = NewFileManager("/home/vagrant/go/src/github.com/Divvy/test")
+	//Create file manager and pass the path to shared directory
+	//Node.fileMgr = NewFileManager("/home/vagrant/go/src/github.com/Divvy/test")
 
 	log.Printf("[Node] Divvy node initialized!")
 }
@@ -89,10 +94,17 @@ func main() {
 		log.Fatalf("[Node] Failed to open port %v because %v", controlPort, err)
 	}
 	log.Printf("[Node] Listening on port %v", controlPort)
+
+    if Node.netMgr.address == nil {
+        log.Printf("[Node] Network manager has no address")
+        goto EXIT
+    }
+
 	err = Node.netMgr.grpcServer.Serve(conn)
 	if err != nil {
 		log.Fatalf("[Node] Failed to serve %v", err)
 	}
 
+EXIT:
 	log.Printf("[Node] Bye from Divvy!")
 }
