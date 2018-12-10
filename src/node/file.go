@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/radovskyb/watcher"
-	"github.com/radovskyb/watcher"
 )
 
 type File struct {
