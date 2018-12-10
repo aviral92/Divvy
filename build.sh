@@ -3,5 +3,5 @@ protoc --go_out=plugins=grpc:. divvy.proto
 cd -
 cd src/node/
 go get -v ./...
-go build .
+go build -o divvy .
 cd -
