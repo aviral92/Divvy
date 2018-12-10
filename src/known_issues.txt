@@ -1,3 +1,4 @@
 1. In the network manager, we are unable to handle multiple interfaces (e.g.,
    NAT adapter, bridge adapter). For now we assume that there is only one
    interface.
+2. Right now we are only working on sharing files in a shared directory. It does not share nested directories.
