@@ -8,7 +8,6 @@ import (
 )
 
 func Run() {
-
 	app := cli.NewApp()
 	app.Name = "divvy"
 	app.Usage = "fight the loneliness!"

@@ -83,7 +83,7 @@ func main() {
 	Node.netMgr.DiscoverPeers()
 
 	//Node.fileMgr.displayDirectory()
-	//go Run()
+	go Run()
 
 	// Once everything is setup start listening. This call is blocking
 	// Do not put any logic after gRPC serve

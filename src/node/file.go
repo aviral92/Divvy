@@ -60,7 +60,7 @@ func NewFileManager(DirectoryPath string) *FileManager {
 		fileMgr.SharedFiles = append(fileMgr.SharedFiles, f)
 	}
 
-	fileMgr.createListener(fileMgr.DirectoryPath)
+	go fileMgr.createListener(fileMgr.DirectoryPath)
 	return fileMgr
 }
 
@@ -104,7 +104,20 @@ func (fileMgr *FileManager) HandleEvent(s []string) {
 					}
 				}
 			case "REMOVE":
-
+				i:=0
+				for _, f := range fileMgr.SharedFiles{
+					if (f.FileName != s[1][1:len(s[1])-1]){
+						i++
+					}
+					break
+				}
+				log.Println(i)
+				a := fileMgr.SharedFiles
+				a=append(a[:i], a[i+1:]...)
+				//copy(a[i:], a[i+1:]) // Shift a[i+1:] left one index
+				//a[len(a)-1] = nil     // Erase last element (write zero value)
+				fileMgr.SharedFiles = a
+				//[:len(a)-1]     // Truncate slice
 		}
 	}
 	fileMgr.displayDirectory()
