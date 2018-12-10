@@ -20,7 +20,7 @@ import (
 *  Data structure that holds all the information. There should be only one NodeT
 *  instantiations throughout the program. All services should use only this
 *  object
-*/
+ */
 
 var Node NodeT
 
@@ -29,7 +29,7 @@ type NodeT struct {
 	ID      uuid.UUID
 	netMgr  *NetworkManager
 	fileMgr *FileManager
-    config  *Configuration
+	config  *Configuration
 
 	// List of Divvy peers
 	peers []PeerT
@@ -47,7 +47,7 @@ func newNodeT() NodeT {
 }
 
 func getNode() *NodeT {
-    return &Node
+	return &Node
 }
 
 // Initialize everything about this node
@@ -55,9 +55,9 @@ func initNode(Node *NodeT) {
 	log.Printf("[Node] Initializing Divvy node...")
 	log.Printf("[Node] ID: %v", Node.ID.String())
 
-    // Read configuration file
-    Node.config = ReadConfigFile("config.json")
-    log.Printf("[Node] Network interface: %v", Node.config.NetworkInterface)
+	// Read configuration file
+	Node.config = ReadConfigFile("config.json")
+	log.Printf("[Node] Network interface: %v", Node.config.NetworkInterface)
 
 	Node.netMgr = NewNetworkManager()
 	// Redundant but saves computation
@@ -95,10 +95,10 @@ func main() {
 	}
 	log.Printf("[Node] Listening on port %v", controlPort)
 
-    if Node.netMgr.address == nil {
-        log.Printf("[Node] Network manager has no address")
-        goto EXIT
-    }
+	if Node.netMgr.address == nil {
+		log.Printf("[Node] Network manager has no address")
+		goto EXIT
+	}
 
 	err = Node.netMgr.grpcServer.Serve(conn)
 	if err != nil {

@@ -7,7 +7,7 @@ import (
 	"log"
 	"net"
 	"strings"
-    "time"
+	"time"
 
 	"github.com/google/uuid"
 	context "golang.org/x/net/context"
@@ -27,7 +27,12 @@ const (
 type PeerT struct {
 	ID      uuid.UUID
 	Address net.IP
-    Client  pb.DivvyClient
+	Client  pb.DivvyClient
+}
+
+type DownloadFileResponse struct {
+	success *pb.Success
+	err     error
 }
 
 // NetworkManger implements the Divvy interface
@@ -43,11 +48,11 @@ type NetworkManager struct {
 
 func NewNetworkManager() *NetworkManager {
 	netMgr := &NetworkManager{}
-    _, err := netMgr.getLocalAddress()
-    if err != nil {
-        log.Printf("[Network] %v", err)
-        return netMgr
-    }
+	_, err := netMgr.getLocalAddress()
+	if err != nil {
+		log.Printf("[Network] %v", err)
+		return netMgr
+	}
 
 	log.Printf("[Network] IP: %v", netMgr.address)
 	netMgr.grpcServer = grpc.NewServer()
@@ -71,9 +76,9 @@ func (netMgr *NetworkManager) getLocalAddress() (net.IP, error) {
 			goto ERROR
 		}
 
-        if i.Name != Node.config.NetworkInterface {
-            continue
-        }
+		if i.Name != Node.config.NetworkInterface {
+			continue
+		}
 		for _, addr := range addrs {
 			var ip net.IP
 			switch v := addr.(type) {
@@ -97,7 +102,7 @@ func (netMgr *NetworkManager) getLocalAddress() (net.IP, error) {
 	}
 
 ERROR:
-    netMgr.address = nil
+	netMgr.address = nil
 	netMgr.availableToOthers = false
 	if err != nil {
 		return nil, err
@@ -112,23 +117,31 @@ func (netMgr *NetworkManager) Ping(ctx context.Context, empty *pb.Empty) (*pb.Su
 }
 
 func (netMgr *NetworkManager) GetSharedFiles(ctx context.Context, empty *pb.Empty) (*pb.FileList, error) {
-    result, err := GetSharedFilesHandler()
+	result, err := GetSharedFilesHandler()
 	return result, err
 }
 
 func (netMgr *NetworkManager) Search(ctx context.Context, query *pb.SearchQuery) (*pb.FileList, error) {
-    result, err := SearchHandler(query)
+	result, err := SearchHandler(query)
 	return result, err
 }
 
-func (netMgr *NetworkManager) DownloadFile(ctx context.Context, request *pb.DownloadRequest) (*pb.Success, error) {
+func (netMgr *NetworkManager) DownloadFileRequest(ctx context.Context, request *pb.DownloadRequest) (*pb.Success, error) {
 	// TODO: The request should be forwarded to the download manager
-	return &pb.Success{}, nil
+	responseChan := make(chan DownloadFileResponse)
+	DownloadFileRequestHandler(request, responseChan)
+	resp := <-responseChan
+	return resp.success, resp.err
+}
+
+func (netMgr *NetworkManager) ReceiveFile(recvFileStream pb.Divvy_ReceiveFileServer) error {
+
+	return nil
 }
 
 /*
 *  Discover other Divvy peers on the network
-*/
+ */
 
 func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 	// Add the new node to the peers list
@@ -143,12 +156,12 @@ func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 	newPeer.Address = net.ParseIP(newNode.Address)
 	netMgr.peers = append(netMgr.peers, newPeer)
 
-    backoffConfig := grpc.DefaultBackoffConfig
+	backoffConfig := grpc.DefaultBackoffConfig
 	backoffConfig.MaxDelay = 500 * time.Millisecond
 
 	conn, err := grpc.Dial(newPeer.Address.String()+discoveryPort,
-                            grpc.WithInsecure(),
-                            grpc.WithBackoffConfig(backoffConfig))
+		grpc.WithInsecure(),
+		grpc.WithBackoffConfig(backoffConfig))
 	if err != nil {
 		newPeer.Client = pb.NewDivvyClient(nil)
 	}
@@ -181,11 +194,12 @@ func (netMgr *NetworkManager) ListenForDiscoveryMessages() {
 
 	listenAddress, _ := net.ResolveUDPAddr("udp", discoveryPort)
 	conn, err := net.ListenUDP("udp", listenAddress)
-	defer conn.Close()
 
 	if err != nil {
 		log.Fatalf("[Network] Unable to listen for discovery: %v", err)
 	}
+
+	defer conn.Close()
 
 	// Keep listening for new messages
 	for {

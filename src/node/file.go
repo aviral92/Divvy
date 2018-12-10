@@ -1,29 +1,31 @@
 package main
 
 import (
-	"os"
-	"time"
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
-	"github.com/radovskyb/watcher"
 	"path/filepath"
+	"time"
+
+	"github.com/radovskyb/watcher"
+	"github.com/radovskyb/watcher"
 )
 
 type File struct {
-	FileName	string
-	Path		string
-	Size		int64
-	IsDir		bool
-	Hash		string
+	FileName string
+	Path     string
+	Size     int64
+	IsDir    bool
+	Hash     string
 }
 
 type FileManager struct {
-	DirectoryPath		string
-	SharedFiles             []*File
+	DirectoryPath string
+	SharedFiles   []*File
 }
 
 func NewFileManager(DirectoryPath string) *FileManager {
@@ -49,11 +51,11 @@ func NewFileManager(DirectoryPath string) *FileManager {
 			log.Fatal(err)
 		}
 
-		f := &File{	FileName :	f.Name(),
-				Path	 :	fileMgr.DirectoryPath,
-				IsDir	 :	false,
-				Size	 :	fi.Size(),
-			  }
+		f := &File{FileName: f.Name(),
+			Path:  fileMgr.DirectoryPath,
+			IsDir: false,
+			Size:  fi.Size(),
+		}
 		f.setHash()
 
 		fileMgr.SharedFiles = append(fileMgr.SharedFiles, f)
@@ -111,8 +113,8 @@ func (fileMgr *FileManager) HandleEvent(s []string) {
 }
 //check if file exists
 func (fileMgr *FileManager) searchFileByName(name string) *File {
-	for _, f := range fileMgr.SharedFiles{
-		if name == f.FileName{
+	for _, f := range fileMgr.SharedFiles {
+		if name == f.FileName {
 			return f
 		}
 	}
@@ -120,8 +122,8 @@ func (fileMgr *FileManager) searchFileByName(name string) *File {
 }
 
 func (fileMgr *FileManager) searchFileByHash(hash string) *File {
-	for _, f := range fileMgr.SharedFiles{
-		if hash == f.Hash{
+	for _, f := range fileMgr.SharedFiles {
+		if hash == f.Hash {
 			return f
 		}
 	}
@@ -139,7 +141,7 @@ func (file *File) setHash() {
 	file.Hash = file.computeHash(file.Path + file.FileName)
 }
 
-func (file *File) getHash(filePath string) string{
+func (file *File) getHash(filePath string) string {
 	if len(file.Hash) == 0 {
 		file.Hash = file.computeHash(filePath)
 	}

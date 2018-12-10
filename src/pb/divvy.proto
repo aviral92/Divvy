@@ -7,7 +7,8 @@ service Divvy {
     rpc Ping(Empty) returns (Success) {}
     rpc Search(SearchQuery) returns (FileList) {}
     rpc GetSharedFiles(Empty) returns (FileList) {}
-    rpc DownloadFile(DownloadRequest) returns (Success) {}
+    rpc DownloadFileRequest(DownloadRequest) returns (Success) {}
+    rpc ReceiveFile(stream FileChunk) returns (Success) {}
 }
 
 // An empty message
@@ -40,6 +41,13 @@ message FileList {
 }
 
 message DownloadRequest {
-    string  hash = 1;
-    int64   offset = 2;
+    string  nodeID = 1;
+    string  hash = 2;
+    int64   offset = 3;
+}
+
+message FileChunk {
+    string hash = 1;
+    bytes  content = 2;
+    int64  offset = 3;
 }

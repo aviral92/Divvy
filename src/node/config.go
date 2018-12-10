@@ -1,37 +1,37 @@
 package main
 
 import (
-    "log"
-    "os"
-    "encoding/json"
+	"encoding/json"
+	"log"
+	"os"
 )
 
 type Configuration struct {
-    NetworkInterface string
+	NetworkInterface string
 }
 
 // Create a new Configuration object with default values
-func initConfig() (*Configuration) {
-    config := Configuration{}
-    config.NetworkInterface = "eth0"
+func initConfig() *Configuration {
+	config := Configuration{}
+	config.NetworkInterface = "eth0"
 
-    return &config
+	return &config
 }
 
-func ReadConfigFile(filepath string) (*Configuration) {
-    config := initConfig()
-    file, err := os.Open(filepath)
-    if err != nil {
-        log.Printf("[Configuration] Unable to open the config file. Setting default values")
-        return config
-    }
+func ReadConfigFile(filepath string) *Configuration {
+	config := initConfig()
+	file, err := os.Open(filepath)
+	if err != nil {
+		log.Printf("[Configuration] Unable to open the config file. Setting default values")
+		return config
+	}
 
-    decoder := json.NewDecoder(file)
-    err = decoder.Decode(config)
-    if err != nil {
-        log.Printf("[Configuration] Unable to open the config file. Setting default values")
-        return config
-    }
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(config)
+	if err != nil {
+		log.Printf("[Configuration] Unable to open the config file. Setting default values")
+		return config
+	}
 
-    return config
+	return config
 }
