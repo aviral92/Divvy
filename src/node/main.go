@@ -64,7 +64,7 @@ func initNode(Node *NodeT) {
 	Node.netMgr.ID = Node.ID
 
 	//Create file manager and pass the path to shared directory
-	Node.fileMgr = NewFileManager("/home/vagrant/go/src/github.com/Divvy/test")
+	Node.fileMgr = NewFileManager(Node.config.SharedDirectory)
 
 	log.Printf("[Node] Divvy node initialized!")
 }

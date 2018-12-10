@@ -135,7 +135,14 @@ func (netMgr *NetworkManager) DownloadFileRequest(ctx context.Context, request *
 }
 
 func (netMgr *NetworkManager) ReceiveFile(recvFileStream pb.Divvy_ReceiveFileServer) error {
-
+    for {
+        _, err := recvFileStream.Recv()
+        if err != nil {
+            goto END
+        }
+    }
+END:
+    // Check error message
 	return nil
 }
 

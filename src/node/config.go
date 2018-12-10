@@ -8,13 +8,14 @@ import (
 
 type Configuration struct {
 	NetworkInterface string
+    SharedDirectory  string
 }
 
 // Create a new Configuration object with default values
 func initConfig() *Configuration {
 	config := Configuration{}
 	config.NetworkInterface = "eth0"
-
+    config.SharedDirectory = "/tmp"
 	return &config
 }
 
