@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/radovskyb/watcher"
@@ -74,15 +74,15 @@ func (fileMgr *FileManager) createListener(DirectoryPath string) {
 	go func() {
 		for {
 			select {
-				case event := <-w.Event:
-					log.Println(event.String()) // Print the event's info.
-					s := strings.Split(event.String(), " ")
-					fileMgr.HandleEvent(s)
-				case err := <-w.Error:
-					log.Fatalln(err)
-				case <-w.Closed:
-					return
-				}
+			case event := <-w.Event:
+				log.Println(event.String()) // Print the event's info.
+				s := strings.Split(event.String(), " ")
+				fileMgr.HandleEvent(s)
+			case err := <-w.Error:
+				log.Fatalln(err)
+			case <-w.Closed:
+				return
+			}
 		}
 	}()
 	if err := w.AddRecursive(DirectoryPath); err != nil {
@@ -95,34 +95,35 @@ func (fileMgr *FileManager) createListener(DirectoryPath string) {
 }
 
 func (fileMgr *FileManager) HandleEvent(s []string) {
-	if (s[0] == "FILE") {
+	if s[0] == "FILE" {
 		switch op := s[2]; op {
-			case "RENAME":
-				for _, f := range fileMgr.SharedFiles{
-					if (f.FileName == s[1][1:len(s[1])-1]){
-						f.FileName = filepath.Base(s[5][:len(s[5])-1])
-					}
+		case "RENAME":
+			for _, f := range fileMgr.SharedFiles {
+				if f.FileName == s[1][1:len(s[1])-1] {
+					f.FileName = filepath.Base(s[5][:len(s[5])-1])
 				}
-			case "REMOVE":
-				i:=0
-				for _, f := range fileMgr.SharedFiles{
-					if (f.FileName != s[1][1:len(s[1])-1]){
-						i++
-					}
-					break
+			}
+		case "REMOVE":
+			i := 0
+			for _, f := range fileMgr.SharedFiles {
+				if f.FileName != s[1][1:len(s[1])-1] {
+					i++
 				}
-				log.Println(i)
-				a := fileMgr.SharedFiles
-				a=append(a[:i], a[i+1:]...)
-				//copy(a[i:], a[i+1:]) // Shift a[i+1:] left one index
-				//a[len(a)-1] = nil     // Erase last element (write zero value)
-				fileMgr.SharedFiles = a
-				//[:len(a)-1]     // Truncate slice
+				break
+			}
+			log.Println(i)
+			a := fileMgr.SharedFiles
+			a = append(a[:i], a[i+1:]...)
+			//copy(a[i:], a[i+1:]) // Shift a[i+1:] left one index
+			//a[len(a)-1] = nil     // Erase last element (write zero value)
+			fileMgr.SharedFiles = a
+			//[:len(a)-1]     // Truncate slice
 		}
 	}
 	fileMgr.displayDirectory()
 
 }
+
 //check if file exists
 func (fileMgr *FileManager) searchFileByName(name string) *File {
 	for _, f := range fileMgr.SharedFiles {
@@ -144,7 +145,7 @@ func (fileMgr *FileManager) searchFileByHash(hash string) *File {
 
 func (fileMgr *FileManager) displayDirectory() {
 
-	for _, f := range fileMgr.SharedFiles{
+	for _, f := range fileMgr.SharedFiles {
 		log.Print(f.FileName)
 	}
 }

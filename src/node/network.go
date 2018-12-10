@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"errors"
+	"io"
 	"log"
 	"net"
 	"strings"
@@ -135,14 +136,23 @@ func (netMgr *NetworkManager) DownloadFileRequest(ctx context.Context, request *
 }
 
 func (netMgr *NetworkManager) ReceiveFile(recvFileStream pb.Divvy_ReceiveFileServer) error {
-    for {
-        _, err := recvFileStream.Recv()
-        if err != nil {
-            goto END
-        }
-    }
+	var err error
+	for {
+		chunk, err := recvFileStream.Recv()
+		_ = chunk
+		if err != nil {
+			goto END
+		}
+	}
 END:
-    // Check error message
+	if err != nil {
+		if err == io.EOF {
+			// Send a success message to client
+			err := recvFileStream.SendAndClose(&pb.Success{})
+			return err
+		}
+	}
+
 	return nil
 }
 

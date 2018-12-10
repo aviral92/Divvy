@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"io"
 	"log"
 	"os"
 
@@ -31,7 +32,6 @@ func GetPeerFromID(nodeID string) (*PeerT, error) {
 *  RPC Handlers
  */
 
-// Search is called by the NetworkManager on SEARCH RPC call
 func SearchHandler(query *pb.SearchQuery) (*pb.FileList, error) {
 	// TODO: Call the File manager to get all the files matching name/hash
 	if query.IsHash {
@@ -47,13 +47,17 @@ func GetSharedFilesHandler() (*pb.FileList, error) {
 	return &pb.FileList{}, nil
 }
 
+// TODO: Function too complex. Try to break into smaller functions
 func DownloadFileRequestHandler(request *pb.DownloadRequest, responseChan chan DownloadFileResponse) {
 	/*
 	 * 1. Check if the file exists
 	 * 2. Start sending the file to the client from the specified offset
 	 */
-	var err error
-	var success *pb.Success
+	var (
+		err     error
+		success *pb.Success
+		fileBuf = make([]byte, Node.config.ChunkSizeInt)
+	)
 
 	requestedFile := Node.fileMgr.searchFileByHash(request.Hash)
 	if requestedFile == nil {
@@ -80,16 +84,47 @@ func DownloadFileRequestHandler(request *pb.DownloadRequest, responseChan chan D
 		return
 	}
 
-	_ = file
-
 	peer, err := GetPeerFromID(request.NodeID)
 	if err != nil {
 		log.Printf("[Core] %v", err)
+		return
 	}
 
-	_ = peer
-
 	// Create a stream
+	stream, err := peer.Client.ReceiveFile(context.Background())
+	if err != nil {
+		log.Printf("[Core] Unable to open stream %v", err)
+		return
+	}
+
+	defer stream.CloseSend()
+
+	// Start sending the file
+	for {
+		lenRead, err := file.Read(fileBuf)
+		if err != nil {
+			goto FINISH
+		}
+		err = stream.Send(&pb.FileChunk{Hash: requestedFile.Hash,
+			Content: fileBuf[:lenRead],
+			Offset:  0})
+		if err != nil {
+			goto FINISH
+		}
+	}
+
+FINISH:
+	if err != nil {
+		if err == io.EOF {
+			status, err := stream.CloseAndRecv()
+			if err != nil {
+				log.Printf("[Core] %v", err)
+			}
+			log.Printf("[Core] Transfer Status: %v", status)
+			return
+		}
+		log.Printf("[Core] Unable to send file %v", err)
+	}
 }
 
 /*
