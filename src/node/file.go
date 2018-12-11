@@ -105,19 +105,47 @@ func (fileMgr *FileManager) HandleEvent(s []string) {
 			}
 		case "REMOVE":
 			i := 0
-			for _, f := range fileMgr.SharedFiles {
-				if f.FileName != s[1][1:len(s[1])-1] {
-					i++
+			log.Println(s[1][1:len(s[1])-1])
+			if filepath.Ext(s[1][1:len(s[1])-1])  != ".swp" {
+				for _, f := range fileMgr.SharedFiles {
+					if f.FileName != s[1][1:len(s[1])-1] {
+						i++
+					}
+					break
 				}
-				break
+				log.Println(i)
+				i--
+				a := fileMgr.SharedFiles
+				a = append(a[:i], a[i+1:]...)
+				//copy(a[i:], a[i+1:]) // Shift a[i+1:] left one index
+				//a[len(a)-1] = nil     // Erase last element (write zero value)
+				fileMgr.SharedFiles = a
+				//[:len(a)-1]     // Truncate slice
 			}
-			log.Println(i)
-			a := fileMgr.SharedFiles
-			a = append(a[:i], a[i+1:]...)
-			//copy(a[i:], a[i+1:]) // Shift a[i+1:] left one index
-			//a[len(a)-1] = nil     // Erase last element (write zero value)
-			fileMgr.SharedFiles = a
-			//[:len(a)-1]     // Truncate slice
+		case "WRITE":
+			//i := 0
+			log.Println(s[1][1:len(s[1])-1])
+			if filepath.Ext(s[1][1:len(s[1])-1])  != ".swp" {
+				for _, f := range fileMgr.SharedFiles {
+					if f.FileName == s[1][1:len(s[1])-1] {
+						log.Println("recompute hash")
+						f.setHash()
+						break
+					}
+				}
+			}
+		case "CREATE":
+			//i := 0
+			log.Println(s[1][1:len(s[1])-1])
+			if filepath.Ext(s[1][1:len(s[1])-1])  != ".swp" {
+				f := &File{	FileName: s[1][1:len(s[1])-1],
+						Path:  fileMgr.DirectoryPath,
+						IsDir: false,
+					}
+				f.setHash()
+
+				fileMgr.SharedFiles = append(fileMgr.SharedFiles, f)
+			}
 		}
 	}
 	fileMgr.displayDirectory()
