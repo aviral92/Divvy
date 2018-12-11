@@ -175,8 +175,14 @@ func PeersGetSharedFiles() (*pb.FileList, error) {
 
 	for _, peer := range Node.netMgr.peers {
 		go func(client pb.DivvyClient) {
+            if client == nil {
+                log.Printf("[Core] Client is nil")
+            }
 			fileList, err := client.GetSharedFiles(context.Background(),
-				&pb.Empty{})
+				                                   &pb.Empty{})
+            if err != nil {
+                log.Printf("[Core] Unable to get files from a peer")
+            }
 			fileListResponse <- CommonFileListRPCResponse{fileList: fileList,
 				err: err}
 
@@ -186,6 +192,7 @@ func PeersGetSharedFiles() (*pb.FileList, error) {
 	// Collecting responses
 	for {
 		resp := <-fileListResponse
+        log.Printf("Received response from %v", resp.fileList.NodeID)
 		if resp.err != nil {
 			peerFiles.Files = append(peerFiles.Files, resp.fileList.Files...)
 		}

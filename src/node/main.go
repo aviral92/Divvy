@@ -71,5 +71,40 @@ func initNode(Node *NodeT) {
 
 // Main function that handles all requests from sub-services
 func main() {
-	Run()
+
+	// Initialize node
+	Node = newNodeT()
+
+	initNode(&Node)
+
+	// Discovery listener. Do this before sending the discovery messages
+	go Node.netMgr.ListenForDiscoveryMessages()
+
+	Node.netMgr.DiscoverPeers()
+
+	//Node.fileMgr.displayDirectory()
+	go cli()
+
+	// Once everything is setup start listening. This call is blocking
+	// Do not put any logic after gRPC serve
+
+	// gRPC server
+	conn, err := net.Listen("tcp", controlPort)
+	if err != nil {
+		log.Fatalf("[Node] Failed to open port %v because %v", controlPort, err)
+	}
+	log.Printf("[Node] Listening on port %v", controlPort)
+
+	if Node.netMgr.address == nil {
+		log.Printf("[Node] Network manager has no address")
+		goto EXIT
+	}
+
+	err = Node.netMgr.grpcServer.Serve(conn)
+	if err != nil {
+		log.Fatalf("[Node] Failed to serve %v", err)
+	}
+
+EXIT:
+	log.Printf("[Node] Bye from Divvy!")
 }

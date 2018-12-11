@@ -9,6 +9,7 @@ import (
 	"net"
 	"strings"
 	"time"
+    "fmt"
 
 	"github.com/google/uuid"
 	context "golang.org/x/net/context"
@@ -45,6 +46,10 @@ type NetworkManager struct {
 
 	// List of Divvy peers
 	peers []PeerT
+}
+
+func (p PeerT) String() string {
+    return fmt.Sprintf("%v (%v)", p.ID, p.Address)
 }
 
 func NewNetworkManager() *NetworkManager {
@@ -171,7 +176,6 @@ func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 	}
 
 	newPeer.Address = net.ParseIP(newNode.Address)
-	netMgr.peers = append(netMgr.peers, newPeer)
 
 	backoffConfig := grpc.DefaultBackoffConfig
 	backoffConfig.MaxDelay = 500 * time.Millisecond
@@ -180,10 +184,13 @@ func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 		grpc.WithInsecure(),
 		grpc.WithBackoffConfig(backoffConfig))
 	if err != nil {
+        log.Printf("[Network] Error dialing to peer %v", err)
 		newPeer.Client = pb.NewDivvyClient(nil)
-	}
-	newPeer.Client = pb.NewDivvyClient(conn)
+	} else {
+        newPeer.Client = pb.NewDivvyClient(conn)
+    }
 
+	netMgr.peers = append(netMgr.peers, newPeer)
 }
 
 func (netMgr *NetworkManager) DiscoverPeers() int {
