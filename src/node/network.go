@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"encoding/gob"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net"
 	"strings"
 	"time"
-    "fmt"
 
 	"github.com/google/uuid"
 	context "golang.org/x/net/context"
@@ -49,7 +49,7 @@ type NetworkManager struct {
 }
 
 func (p PeerT) String() string {
-    return fmt.Sprintf("%v (%v)", p.ID, p.Address)
+	return fmt.Sprintf("%v (%v)", p.ID, p.Address)
 }
 
 func NewNetworkManager() *NetworkManager {
@@ -102,14 +102,12 @@ func (netMgr *NetworkManager) getLocalAddress() (net.IP, error) {
 				continue
 			}
 			netMgr.address = ip
-			netMgr.availableToOthers = true
 			return ip, nil
 		}
 	}
 
 ERROR:
 	netMgr.address = nil
-	netMgr.availableToOthers = false
 	if err != nil {
 		return nil, err
 	}
@@ -184,11 +182,11 @@ func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 		grpc.WithInsecure(),
 		grpc.WithBackoffConfig(backoffConfig))
 	if err != nil {
-        log.Printf("[Network] Error dialing to peer %v", err)
+		log.Printf("[Network] Error dialing to peer %v", err)
 		newPeer.Client = pb.NewDivvyClient(nil)
 	} else {
-        newPeer.Client = pb.NewDivvyClient(conn)
-    }
+		newPeer.Client = pb.NewDivvyClient(conn)
+	}
 
 	netMgr.peers = append(netMgr.peers, newPeer)
 }

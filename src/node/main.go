@@ -6,13 +6,9 @@
 package main
 
 import (
-	//"fmt"
 	"log"
-	//"net"
+	"net"
 
-	//"google.golang.org/grpc"
-
-	//"github.com/Divvy/src/node"
 	"github.com/google/uuid"
 )
 
