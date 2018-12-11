@@ -39,10 +39,10 @@ type DownloadFileResponse struct {
 
 // NetworkManger implements the Divvy interface
 type NetworkManager struct {
-	ID                uuid.UUID
-	address           net.IP
-	readyToListen      bool
-	grpcServer        *grpc.Server
+	ID            uuid.UUID
+	address       net.IP
+	readyToListen chan int
+	grpcServer    *grpc.Server
 
 	// List of Divvy peers
 	peers []PeerT
@@ -65,7 +65,7 @@ func NewNetworkManager() *NetworkManager {
 
 	// This seems confusing. Is there a better way of doing this?
 	pb.RegisterDivvyServer(netMgr.grpcServer, netMgr)
-    netMgr.readyToListen = false
+	netMgr.readyToListen = make(chan int, 1)
 	return netMgr
 }
 
@@ -192,8 +192,7 @@ func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 }
 
 func (netMgr *NetworkManager) DiscoverPeers() int {
-    for netMgr.readyToListen == false {
-    }
+	<-netMgr.readyToListen
 
 	// Send a broadcast message over the LAN
 	addr, _ := net.ResolveUDPAddr("udp", broadcastAddress+discoveryPort)
@@ -226,7 +225,7 @@ func (netMgr *NetworkManager) ListenForDiscoveryMessages() {
 
 	defer conn.Close()
 
-    Node.netMgr.readyToListen = true
+	Node.netMgr.readyToListen <- 1
 
 	// Keep listening for new messages
 	for {
