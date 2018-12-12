@@ -168,6 +168,7 @@ func PeersSearchFile(searchQuery string, isHash bool) (pb.FileList, error) {
 		resp := <-searchResponse
 		if resp.err != nil {
 			log.Printf("[Core] Error in response %v", resp.err)
+            goto EXIT
 		}
 		if resp.fileList.Files != nil {
 			peerFiles.Files = append(peerFiles.Files, resp.fileList.Files...)
@@ -178,7 +179,7 @@ func PeersSearchFile(searchQuery string, isHash bool) (pb.FileList, error) {
 		 */
 		remainingResponses--
 	}
-
+EXIT:
 	return peerFiles, nil
 }
 
