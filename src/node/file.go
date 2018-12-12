@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Divvy/src/pb"
 	"github.com/radovskyb/watcher"
 )
 
@@ -176,6 +177,18 @@ func (fileMgr *FileManager) displayDirectory() {
 	for _, f := range fileMgr.SharedFiles {
 		log.Print(f.FileName)
 	}
+}
+
+func (fileMgr *FileManager) GetSharedFilesList(netMgr *NetworkManager) (*pb.FileList) {
+	i:=0
+	fl := &pb.FileList{}
+	fl.NodeID = netMgr.ID.String()
+	for _,f := range fileMgr.SharedFiles {
+		fl.Files[i].Name = f.FileName
+		fl.Files[i].Hash = f.Hash
+		i++
+	}
+	return fl
 }
 
 func (file *File) setHash() {
