@@ -41,14 +41,14 @@ func SearchHandler(query *pb.SearchQuery) (*pb.FileList, error) {
 	if query.IsHash {
 		file = Node.fileMgr.searchFileByHash(query.Key)
 		log.Printf("Searched file: %v", file.FileName)
-	}else{
+	} else {
 		file = Node.fileMgr.searchFileByName(query.Key)
 		log.Printf("Searched file: %v", file.FileName)
 	}
 
 	fileList.Files = append(fileList.Files, &pb.File{
-			Name : file.FileName,
-			Hash : file.Hash})
+		Name: file.FileName,
+		Hash: file.Hash})
 	return fileList, nil
 }
 
@@ -167,6 +167,9 @@ func PeersSearchFile(searchQuery string, isHash bool) (pb.FileList, error) {
 
 		resp := <-searchResponse
 		if resp.err != nil {
+			log.Printf("[Core] Error in response %v", resp.err)
+		}
+		if resp.fileList.Files != nil {
 			peerFiles.Files = append(peerFiles.Files, resp.fileList.Files...)
 		}
 

@@ -46,7 +46,7 @@ func DisplayPeerFiles() {
 
 func DisplaySearchResult(searchParam string, isHash bool) {
 	// TODO: Complete this function
-	fileList,err := PeersSearchFile(searchParam, isHash)
+	fileList, err := PeersSearchFile(searchParam, isHash)
 	if err != nil {
 		fmt.Println("Error getting file via search parameter specified from peers")
 	}
@@ -74,10 +74,10 @@ func ExecuteCommand(cmdStr string) {
 	case "myfiles":
 		DisplayMyFiles()
 	case "search":
-		if len(commands) == 3{
+		if len(commands) == 3 {
 			if commands[1] == "hash" {
 				DisplaySearchResult(commands[2], true)
-			}else if commands[1] == "name" {
+			} else if commands[1] == "name" {
 				DisplaySearchResult(commands[2], false)
 			}
 		}
