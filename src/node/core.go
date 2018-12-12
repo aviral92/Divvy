@@ -33,7 +33,6 @@ func GetPeerFromID(nodeID string) (*PeerT, error) {
  */
 
 func SearchHandler(query *pb.SearchQuery) (*pb.FileList, error) {
-	// TODO: Call the File manager to get all the files matching name/hash
 	if query.IsHash {
 		file := Node.fileMgr.searchFileByHash(query.Key)
 		log.Printf("Searched file: %v", file.FileName)
@@ -43,8 +42,7 @@ func SearchHandler(query *pb.SearchQuery) (*pb.FileList, error) {
 }
 
 func GetSharedFilesHandler() (*pb.FileList, error) {
-	// TODO: Call the File manager to get all files
-    fileList := Node.fileMgr.GetSharedFilesList()
+	fileList := Node.fileMgr.GetSharedFilesList()
 	return &fileList, nil
 }
 
@@ -200,13 +198,12 @@ func PeersGetSharedFiles() (pb.FileList, error) {
 		}
 
 		resp := <-fileListResponse
-		log.Printf("Received response from %v", resp.fileList.NodeID)
 		if resp.err != nil {
-            log.Printf("[Core] Error in response %v", resp.err)
+			log.Printf("[Core] Error in response %v", resp.err)
 		}
-        if resp.fileList.Files != nil {
-            peerFiles.Files = append(peerFiles.Files, resp.fileList.Files...)
-        }
+		if resp.fileList.Files != nil {
+			peerFiles.Files = append(peerFiles.Files, resp.fileList.Files...)
+		}
 
 		remainingResponses--
 	}
