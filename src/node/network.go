@@ -179,7 +179,7 @@ func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 	backoffConfig := grpc.DefaultBackoffConfig
 	backoffConfig.MaxDelay = 500 * time.Millisecond
 
-	conn, err := grpc.Dial(newPeer.Address.String()+discoveryPort,
+	conn, err := grpc.Dial(newPeer.Address.String()+controlPort,
 		grpc.WithInsecure(),
 		grpc.WithBackoffConfig(backoffConfig))
 	if err != nil {
