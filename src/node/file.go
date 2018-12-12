@@ -179,16 +179,15 @@ func (fileMgr *FileManager) displayDirectory() {
 	}
 }
 
-func (fileMgr *FileManager) GetSharedFilesList(netMgr *NetworkManager) (*pb.FileList) {
-	i:=0
-	fl := &pb.FileList{}
-	fl.NodeID = netMgr.ID.String()
-	for _,f := range fileMgr.SharedFiles {
-		fl.Files[i].Name = f.FileName
-		fl.Files[i].Hash = f.Hash
-		i++
+func (fileMgr *FileManager) GetSharedFilesList() (pb.FileList) {
+	fileList := pb.FileList{}
+	fileList.NodeID = Node.netMgr.ID.String()
+	for _,file := range fileMgr.SharedFiles {
+		fileList.Files = append(fileList.Files, &pb.File{
+                                                    Name: file.FileName,
+                                                    Hash: file.Hash})
 	}
-	return fl
+	return fileList
 }
 
 func (file *File) setHash() {

@@ -44,7 +44,8 @@ func SearchHandler(query *pb.SearchQuery) (*pb.FileList, error) {
 
 func GetSharedFilesHandler() (*pb.FileList, error) {
 	// TODO: Call the File manager to get all files
-	return &pb.FileList{}, nil
+    fileList := Node.fileMgr.GetSharedFilesList()
+	return &fileList, nil
 }
 
 // TODO: Function too complex. Try to break into smaller functions
