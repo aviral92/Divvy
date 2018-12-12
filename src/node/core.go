@@ -141,6 +141,25 @@ FINISH:
 *  CLI Handlers
  */
 
+func PeersDownloadFile(fileHash string) (*pb.Success, error){
+	fileList, err := PeersSearchFile(fileHash, true)
+
+	//Download
+	peer, err := GetPeerFromID(fileList.NodeID)
+
+	success, err := peer.Client.DownloadFileRequest(context.Background(),
+					&pb.DownloadRequest{
+						NodeID : Node.netMgr.ID.String(),
+						Hash	: fileHash,
+						Offset	: 0 })
+	if err != nil {
+		log.Printf("download error")
+		return nil,err
+	}
+
+	return success, nil
+}
+
 func PeersSearchFile(searchQuery string, isHash bool) (pb.FileList, error) {
 	// Send a search RPC to all peers and wait for their responses
 	searchResponse := make(chan CommonFileListRPCResponse)

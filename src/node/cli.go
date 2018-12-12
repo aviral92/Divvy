@@ -81,6 +81,12 @@ func ExecuteCommand(cmdStr string) {
 				DisplaySearchResult(commands[2], false)
 			}
 		}
+	case "download":
+		if len(commands) == 2 {
+			if commands[1] == "hash" {
+				PeersDownloadFile(commands[2])
+			}
+		}
 	default:
 		log.Printf("[CLI] Command not recognized")
 	}
