@@ -35,6 +35,10 @@ func DisplayPeerFiles() {
 	if err != nil {
 		fmt.Println("Error getting file list from peers")
 	}
+    if fileList.Files == nil {
+        return
+    }
+
 	for _, file := range fileList.Files {
 		fmt.Sprintf("%v (%v)", file.Name, file.Hash)
 	}

@@ -168,10 +168,10 @@ func PeersSearchFile(searchQuery string) (*pb.FileList, error) {
 	return peerFiles, nil
 }
 
-func PeersGetSharedFiles() (*pb.FileList, error) {
+func PeersGetSharedFiles() (pb.FileList, error) {
 	fileListResponse := make(chan CommonFileListRPCResponse)
 	remainingResponses := len(Node.netMgr.peers)
-	var peerFiles *pb.FileList
+	var peerFiles pb.FileList
 
 	for _, peer := range Node.netMgr.peers {
 		go func(client pb.DivvyClient) {
@@ -191,19 +191,23 @@ func PeersGetSharedFiles() (*pb.FileList, error) {
 
 	// Collecting responses
 	for {
-		resp := <-fileListResponse
-		log.Printf("Received response from %v", resp.fileList.NodeID)
-		if resp.err != nil {
-			peerFiles.Files = append(peerFiles.Files, resp.fileList.Files...)
-		}
-
 		/*
 		 *  This could be a BUG. Not sure what will happen when when a grpc fails
 		 */
-		remainingResponses--
 		if remainingResponses <= 0 {
 			break
 		}
+
+		resp := <-fileListResponse
+		log.Printf("Received response from %v", resp.fileList.NodeID)
+		if resp.err != nil {
+            log.Printf("[Core] Error in response %v", resp.err)
+		}
+        if resp.fileList.Files != nil {
+            peerFiles.Files = append(peerFiles.Files, resp.fileList.Files...)
+        }
+
+		remainingResponses--
 	}
 
 	return peerFiles, nil
