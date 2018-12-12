@@ -35,13 +35,18 @@ func DisplayPeerFiles() {
 	if err != nil {
 		fmt.Println("Error getting file list from peers")
 	}
-    if fileList.Files == nil {
-        return
-    }
+	if fileList.Files == nil {
+		return
+	}
 
 	for _, file := range fileList.Files {
-		fmt.Sprintf("%v (%v)", file.Name, file.Hash)
+		fmt.Println(file)
 	}
+}
+
+func DisplaySearchResultByHash(hash string) {
+	// TODO: Complete this function
+	return
 }
 
 func ExecuteCommand(cmdStr string) {
@@ -58,6 +63,10 @@ func ExecuteCommand(cmdStr string) {
 		DisplayPeerFiles()
 	case "myfiles":
 		DisplayMyFiles()
+	case "search":
+		if commands[1] == "hash" {
+			DisplaySearchResultByHash(commands[2])
+		}
 	default:
 		log.Printf("[CLI] Command not recognized")
 	}

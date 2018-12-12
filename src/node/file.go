@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -179,15 +180,19 @@ func (fileMgr *FileManager) displayDirectory() {
 	}
 }
 
-func (fileMgr *FileManager) GetSharedFilesList() (pb.FileList) {
+func (fileMgr *FileManager) GetSharedFilesList() pb.FileList {
 	fileList := pb.FileList{}
 	fileList.NodeID = Node.netMgr.ID.String()
-	for _,file := range fileMgr.SharedFiles {
+	for _, file := range fileMgr.SharedFiles {
 		fileList.Files = append(fileList.Files, &pb.File{
-                                                    Name: file.FileName,
-                                                    Hash: file.Hash})
+			Name: file.FileName,
+			Hash: file.Hash})
 	}
 	return fileList
+}
+
+func (file File) String() string {
+	return fmt.Sprintf("%v (%v)", file.FileName, file.Hash)
 }
 
 func (file *File) setHash() {
