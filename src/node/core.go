@@ -40,15 +40,15 @@ func SearchHandler(query *pb.SearchQuery) (*pb.FileList, error) {
 
 	if query.IsHash {
 		file = Node.fileMgr.searchFileByHash(query.Key)
-		log.Printf("Searched file: %v", file.FileName)
 	} else {
 		file = Node.fileMgr.searchFileByName(query.Key)
-		log.Printf("Searched file: %v", file.FileName)
 	}
 
-	fileList.Files = append(fileList.Files, &pb.File{
-		Name: file.FileName,
-		Hash: file.Hash})
+    if file != nil {
+        fileList.Files = append(fileList.Files, &pb.File{
+            Name: file.FileName,
+            Hash: file.Hash})
+    }
 	return fileList, nil
 }
 
