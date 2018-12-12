@@ -44,9 +44,19 @@ func DisplayPeerFiles() {
 	}
 }
 
-func DisplaySearchResultByHash(hash string) {
+func DisplaySearchResult(searchParam string, isHash bool) {
 	// TODO: Complete this function
-	return
+	fileList,err := PeersSearchFile(searchParam, isHash)
+	if err != nil {
+		fmt.Println("Error getting file via search parameter specified from peers")
+	}
+	if fileList.Files == nil {
+		return
+	}
+
+	for _, file := range fileList.Files {
+		fmt.Println(file)
+	}
 }
 
 func ExecuteCommand(cmdStr string) {
@@ -64,8 +74,12 @@ func ExecuteCommand(cmdStr string) {
 	case "myfiles":
 		DisplayMyFiles()
 	case "search":
-		if commands[1] == "hash" {
-			DisplaySearchResultByHash(commands[2])
+		if len(commands) == 3{
+			if commands[1] == "hash" {
+				DisplaySearchResult(commands[2], true)
+			}else if commands[1] == "name" {
+				DisplaySearchResult(commands[2], false)
+			}
 		}
 	default:
 		log.Printf("[CLI] Command not recognized")

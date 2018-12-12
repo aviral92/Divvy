@@ -33,12 +33,23 @@ func GetPeerFromID(nodeID string) (*PeerT, error) {
  */
 
 func SearchHandler(query *pb.SearchQuery) (*pb.FileList, error) {
+	fileList := &pb.FileList{}
+	fileList.NodeID = Node.netMgr.ID.String()
+
+	var file *File
+
 	if query.IsHash {
-		file := Node.fileMgr.searchFileByHash(query.Key)
+		file = Node.fileMgr.searchFileByHash(query.Key)
+		log.Printf("Searched file: %v", file.FileName)
+	}else{
+		file = Node.fileMgr.searchFileByName(query.Key)
 		log.Printf("Searched file: %v", file.FileName)
 	}
 
-	return &pb.FileList{}, nil
+	fileList.Files = append(fileList.Files, &pb.File{
+			Name : file.FileName,
+			Hash : file.Hash})
+	return fileList, nil
 }
 
 func GetSharedFilesHandler() (*pb.FileList, error) {
@@ -130,17 +141,17 @@ FINISH:
 *  CLI Handlers
  */
 
-func PeersSearchFile(searchQuery string) (*pb.FileList, error) {
+func PeersSearchFile(searchQuery string, isHash bool) (pb.FileList, error) {
 	// Send a search RPC to all peers and wait for their responses
 	searchResponse := make(chan CommonFileListRPCResponse)
 	remainingResponses := len(Node.netMgr.peers)
-	var peerFiles *pb.FileList
+	var peerFiles pb.FileList
 
 	for _, peer := range Node.netMgr.peers {
 		go func(client pb.DivvyClient) {
 			fileList, err := client.Search(context.Background(),
 				&pb.SearchQuery{
-					IsHash: false,
+					IsHash: isHash,
 					Key:    searchQuery})
 			searchResponse <- CommonFileListRPCResponse{fileList: fileList,
 				err: err}
@@ -150,6 +161,10 @@ func PeersSearchFile(searchQuery string) (*pb.FileList, error) {
 
 	// Collecting responses
 	for {
+		if remainingResponses <= 0 {
+			break
+		}
+
 		resp := <-searchResponse
 		if resp.err != nil {
 			peerFiles.Files = append(peerFiles.Files, resp.fileList.Files...)
@@ -159,9 +174,6 @@ func PeersSearchFile(searchQuery string) (*pb.FileList, error) {
 		 *  This could be a BUG. Not sure what will happen when when a grpc fails
 		 */
 		remainingResponses--
-		if remainingResponses <= 0 {
-			break
-		}
 	}
 
 	return peerFiles, nil
