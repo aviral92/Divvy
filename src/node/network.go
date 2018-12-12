@@ -121,6 +121,7 @@ func (netMgr *NetworkManager) Ping(ctx context.Context, empty *pb.Empty) (*pb.Su
 }
 
 func (netMgr *NetworkManager) GetSharedFiles(ctx context.Context, empty *pb.Empty) (*pb.FileList, error) {
+    log.Printf("[Core] Received GetSharedFiles RPC")
 	result, err := GetSharedFilesHandler()
 	return result, err
 }
@@ -193,10 +194,10 @@ func (netMgr *NetworkManager) AddNewNode(newNode pb.NewNode) {
 
 func (netMgr *NetworkManager) DiscoverPeers() int {
 	<-netMgr.readyToListen
-
+    log.Printf("[Network] Broadcasting for peer discovery")
 	// Send a broadcast message over the LAN
 	addr, _ := net.ResolveUDPAddr("udp", broadcastAddress+discoveryPort)
-	localAddress, _ := net.ResolveUDPAddr("ucp", "127.0.0.1:0")
+	localAddress, _ := net.ResolveUDPAddr("udp", "localhost")
 
 	conn, err := net.DialUDP("udp", localAddress, addr)
 	if err != nil {
@@ -226,7 +227,7 @@ func (netMgr *NetworkManager) ListenForDiscoveryMessages() {
 	defer conn.Close()
 
 	Node.netMgr.readyToListen <- 1
-
+    log.Printf("[Network] Listening for discovery messages")
 	// Keep listening for new messages
 	for {
 		dataLen, peerAddr, _ := conn.ReadFromUDP(udpData)
