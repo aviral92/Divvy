@@ -181,7 +181,7 @@ func PeersGetSharedFiles() (*pb.FileList, error) {
 			fileList, err := client.GetSharedFiles(context.Background(),
 				&pb.Empty{})
 			if err != nil {
-				log.Printf("[Core] Unable to get files from a peer")
+				log.Printf("[Core] Unable to get files from a peer %v", err)
 			}
 			fileListResponse <- CommonFileListRPCResponse{fileList: fileList,
 				err: err}
