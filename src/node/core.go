@@ -44,11 +44,11 @@ func SearchHandler(query *pb.SearchQuery) (*pb.FileList, error) {
 		file = Node.fileMgr.searchFileByName(query.Key)
 	}
 
-    if file != nil {
-        fileList.Files = append(fileList.Files, &pb.File{
-            Name: file.FileName,
-            Hash: file.Hash})
-    }
+	if file != nil {
+		fileList.Files = append(fileList.Files, &pb.File{
+			Name: file.FileName,
+			Hash: file.Hash})
+	}
 	return fileList, nil
 }
 
@@ -141,20 +141,20 @@ FINISH:
 *  CLI Handlers
  */
 
-func PeersDownloadFile(fileHash string) (*pb.Success, error){
+func PeersDownloadFile(fileHash string) (*pb.Success, error) {
 	fileList, err := PeersSearchFile(fileHash, true)
 
 	//Download
 	peer, err := GetPeerFromID(fileList.NodeID)
 
 	success, err := peer.Client.DownloadFileRequest(context.Background(),
-					&pb.DownloadRequest{
-						NodeID : Node.netMgr.ID.String(),
-						Hash	: fileHash,
-						Offset	: 0 })
+		&pb.DownloadRequest{
+			NodeID: Node.netMgr.ID.String(),
+			Hash:   fileHash,
+			Offset: 0})
 	if err != nil {
 		log.Printf("download error")
-		return nil,err
+		return nil, err
 	}
 
 	return success, nil
@@ -187,7 +187,7 @@ func PeersSearchFile(searchQuery string, isHash bool) (pb.FileList, error) {
 		resp := <-searchResponse
 		if resp.err != nil {
 			log.Printf("[Core] Error in response %v", resp.err)
-            goto EXIT
+			goto EXIT
 		}
 		if resp.fileList.Files != nil {
 			peerFiles.Files = append(peerFiles.Files, resp.fileList.Files...)
