@@ -1,1 +1,2 @@
-1. Right now we are only working on sharing files in a shared directory. It does not share nested directories.
+1. Only top level files in a directory are sharable. Nested directories/files do
+    cannot be shared.
