@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aviral92/Divvy/src/pb"
+	"github.com/Divvy/src/pb"
 	"github.com/radovskyb/watcher"
 )
 

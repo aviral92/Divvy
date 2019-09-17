@@ -15,7 +15,7 @@ import (
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
 
-	"github.com/aviral92/Divvy/src/pb"
+	"github.com/Divvy/src/pb"
 )
 
 // Colon is not a typo!
