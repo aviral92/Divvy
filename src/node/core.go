@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/Divvy/src/pb"
+	"github.com/aviral92/Divvy/src/pb"
 	context "golang.org/x/net/context"
 )
 
